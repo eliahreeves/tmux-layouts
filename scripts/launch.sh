@@ -30,7 +30,7 @@ config_file="${selected:1}"
 config_file="$CONFIG_DIR${config_file//\//.}.yaml"
 
 if [[ -f "$config_file" ]]; then
-	selected_name=$(yq '.name // ""' "$config_file")
+	selected_name=$(yq -r '.name // ""' "$config_file")
 fi
 
 selected_name="${selected_name:-$(basename "$selected" | tr . _)}"
@@ -45,27 +45,38 @@ if ! tmux has-session -t="$selected_name" 2>/dev/null; then
 		tmux new-session -ds "${selected_name}" -c "${selected}"
 	else
 		for ((i = 0; i < num_windows; i++)); do
-			name=$(yq ".windows[$i].name // \"\"" "$config_file")
-			cmd=$(yq ".windows[$i].command // \"\"" "$config_file")
-			path=$(yq ".windows[$i].path // \"\"" "$config_file")
+			name=$(yq -r ".windows[$i].name // \"\"" "$config_file")
+			cmd=$(yq -r ".windows[$i].command // \"\"" "$config_file")
+			path=$(yq -r ".windows[$i].path // \"\"" "$config_file")
+			run_command=$(yq ".windows[$i].run" "$config_file")
+			path="${path/\~/$HOME}"
+			if [[ -n "$selected" && "${selected: -1}" != "/" ]]; then
+				selected="${selected}/"
+			fi
+			if [[ "${path:0:1}" != "/" ]]; then
+				path="${selected}${path}"
+			fi
 
-			window_cmd="$SHELL"
-			window_path="$selected"
-
-			[[ -n "$cmd" ]] && window_cmd="$SHELL -c '$cmd; exec $SHELL'"
-			[[ -n "$path" ]] && window_path="$path"
+			window_path="$path"
 
 			if [[ $i -eq 0 ]]; then
 				if [[ -n "$name" ]]; then
-					tmux new-session -ds "$selected_name" -c "${window_path}" -n "${name}" "${window_cmd}"
+					tmux new-session -ds "$selected_name" -c "${window_path}" -n "${name}"
 				else
-					tmux new-session -ds "$selected_name" -c "${window_path}" "${window_cmd}"
+					tmux new-session -ds "$selected_name" -c "${window_path}"
 				fi
 			else
 				if [[ -n "$name" ]]; then
-					tmux new-window -t "$selected_name:" -c "${window_path}" -n "${name}" "${window_cmd}"
+					tmux new-window -t "$selected_name:" -c "${window_path}" -n "${name}"
 				else
-					tmux new-window -t "$selected_name:" -c "${window_path}" "${window_cmd}"
+					tmux new-window -t "$selected_name:" -c "${window_path}"
+				fi
+			fi
+			if [[ -n "${cmd}" ]]; then
+				if [[ "$run_command" == "false" ]]; then
+					tmux send-keys -t "${selected_name}" "${cmd}"
+				else
+					tmux send-keys -t "${selected_name}" "${cmd}" "C-m"
 				fi
 			fi
 		done
