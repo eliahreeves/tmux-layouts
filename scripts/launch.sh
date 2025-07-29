@@ -9,17 +9,40 @@ fi
 if [[ $# -eq 1 ]]; then
 	selected=$1
 else
-	project_paths="$(tmux show-option -gqv "@sessions-project-paths")"
-	project_paths="${project_paths:-"~"}"
+	project_paths="$(tmux show-option -gqv "@layouts-project-paths")"
+	project_paths="${project_paths:-"~/*"}"
+	declare -a find_targets
+	declare -a direct_paths
 	IFS=';' read -r -a path_array <<<"$project_paths"
 
-	for i in "${!path_array[@]}"; do
-		if [[ ${path_array[i]} == ~* ]]; then
-			path_array[i]="${path_array[i]/\~/$HOME}"
+	for p in "${path_array[@]}"; do
+		local_path="${p/\~/$HOME}"
+		if [[ "$local_path" == *\* ]]; then
+			base_dir="${local_path%\*}"
+			if [[ -d "$base_dir" ]]; then
+				find_targets+=("$base_dir")
+			fi
+		else
+			if [[ -d "$local_path" || (-L "$local_path" && -d "$local_path") ]]; then
+				direct_paths+=("$local_path")
+			fi
 		fi
 	done
 
-	selected=$(find "${path_array[@]}" -mindepth 1 -maxdepth 1 \( -type d -o -xtype d \) | fzf)
+	all_fzf_input=""
+
+	if [[ ${#find_targets[@]} -gt 0 ]]; then
+		all_fzf_input=$(find "${find_targets[@]}" -mindepth 1 -maxdepth 1 \( -type d -o -xtype d \))
+	fi
+
+	if [[ ${#direct_paths[@]} -gt 0 ]]; then
+		if [[ -n "$all_fzf_input" ]]; then
+			all_fzf_input+="\n"
+		fi
+		all_fzf_input+=$(printf "%s\n" "${direct_paths[@]}")
+	fi
+
+	selected=$(echo -e "$all_fzf_input" | fzf)
 fi
 
 if [[ -z $selected ]]; then

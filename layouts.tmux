@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 CURRENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-KEY=$(tmux show-option -gqv "@sessions-finder-key")
+KEY=$(tmux show-option -gqv "@layouts-finder-key")
 KEY="${KEY:-f}"
 
 tmux unbind-key "$KEY"
@@ -17,3 +17,4 @@ if ((major > 3)) || { ((major == 3)) && ((minor >= 2)); }; then
 else
 	tmux bind-key -r "$KEY" neww "$CURRENT_DIR/scripts/launch.sh"
 fi
+tmux set -s command-alias new-layout="run-shell $CURRENT_DIR/scripts/new-layout.sh"
