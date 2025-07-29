@@ -5,20 +5,17 @@
 I keep all my projects in a single directory and I wanted to be able to launch a fuzzy finder to open a new tmux session, optionally, with a layout. This behavior is similar to "sessionizer." The additional functionality I wanted was to be able to write a config file to describe what windows to open.
 
 ## Installation
-
-### Dependencies
-
+#### Requirements
+- tmux
+   Pretty much any version should work.
+### Install with TPM
+#### Dependencies
 - fzf
 
     A very useful fuzzy finder.
 - yq
 
     A YAML counterpart to jq. Parses YAML files in the command line.
-- tmux
-
-    Obviously. Any version should do. If the version is new enough tmux-layouts will run in a popup.
-
-Install this with TPM
 
 First add this line to your config:
 ```bash
@@ -39,6 +36,41 @@ set -g @layouts-finder-key 'f'
 Optionally set a path to look for configs. The default is `~/.tmux/layouts/`
 ```bash
 set -g @layouts-config-path '~/.tmux/layouts/'
+```
+### Install with Nix home-manager or NixOS
+You can package the plugin in your config or a module like this:
+```nix
+# tmux-module.nix
+{pkgs, ...}: let
+  layouts = pkgs.tmuxPlugins.mkTmuxPlugin {
+    pluginName = "layouts";
+    version = "dev";
+    rtpFilePath = "layouts.tmux";
+    src = pkgs.fetchFromGitHub {
+      owner = "eliahreeves";
+      repo = "tmux-layouts";
+      rev = "6061cafc5434627c2813a2696a0250b5017a5c24";
+      sha256 = "";
+    };
+    postInstall = ''
+      sed -i -e 's|\bfzf\b|${pkgs.fzf}/bin/fzf|g' $target/scripts/launch.sh
+      sed -i -e 's|\byq\b|${pkgs.yq-go}/bin/yq|g' $target/scripts/launch.sh
+    '';
+  };
+in {
+  programs.tmux = {
+    enable = true;
+    plugins = [
+      {
+        plugin = layouts;
+        extraConfig = ''
+          set -g @layouts-project-paths '~/repos'
+          set -g @layouts-finder-key 'f'
+        '';
+      }
+    ];
+  };
+}
 ```
 ## Usage
 
