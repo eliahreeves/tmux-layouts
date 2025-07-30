@@ -44,13 +44,13 @@ You can package the plugin in your config or a module like this:
 {pkgs, ...}: let
   layouts = pkgs.tmuxPlugins.mkTmuxPlugin {
     pluginName = "layouts";
-    version = "dev";
+    version = "0.1.0";
     rtpFilePath = "layouts.tmux";
     src = pkgs.fetchFromGitHub {
       owner = "eliahreeves";
       repo = "tmux-layouts";
-      rev = "6061cafc5434627c2813a2696a0250b5017a5c24";
-      sha256 = "";
+      rev = "e98a7a05e9eee5e4e064789779120de19288c7fe";
+      sha256 = "sha256-fVJp10cCJPq4HENPh2gcljPUd7Q3Jqu3OO7kp0ZCOUc=";
     };
     postInstall = ''
       sed -i -e 's|\bfzf\b|${pkgs.fzf}/bin/fzf|g' $target/scripts/launch.sh
