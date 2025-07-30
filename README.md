@@ -79,7 +79,7 @@ Just activate tmux-layouts and fuzzy find your session. To create window layout 
 ```bash
 echo "$(pwd | sed 's|^/||; s|/|.|g').yaml"
 ```
-This file can be created in your config folder for your current directory with prefix+:new-layout
+This file can be created in your config folder for your current directory with `prefix + :new-layout`
 
 The YAML format is as follows:
 ```yaml
