@@ -7,6 +7,7 @@ I keep all my projects in a single directory and I wanted to be able to launch a
 ## Installation
 #### Requirements
 - tmux
+
    Pretty much any version should work.
 ### Install with TPM
 #### Dependencies
