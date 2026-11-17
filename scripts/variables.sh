@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 CONFIG_DIR=$(tmux show-option -gqv "@layouts-config-path")
-CONFIG_DIR="${CONFIG:-"$HOME/.tmux/layouts/"}"
+CONFIG_DIR="${CONFIG_DIR:-"$HOME/.tmux/layouts/"}"
 if [[ ${CONFIG_DIR} == ~* ]]; then
 	CONFIG_DIR="${CONFIG_DIR/\~/$HOME}"
 fi

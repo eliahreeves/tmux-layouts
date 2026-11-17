@@ -50,8 +50,8 @@ You can package the plugin in your config or a module like this:
     src = pkgs.fetchFromGitHub {
       owner = "eliahreeves";
       repo = "tmux-layouts";
-      rev = "e98a7a05e9eee5e4e064789779120de19288c7fe";
-      sha256 = "sha256-fVJp10cCJPq4HENPh2gcljPUd7Q3Jqu3OO7kp0ZCOUc=";
+      rev = "<commit-sha>";
+      sha256 = pkgs.lib.fakeHash;
     };
     postInstall = ''
       sed -i -e 's|\bfzf\b|${pkgs.fzf}/bin/fzf|g' $target/scripts/launch.sh
@@ -73,6 +73,7 @@ in {
   };
 }
 ```
+Replace `<commit-sha>` with the commit you want to use (e.g. the latest on `main`). Build once with `pkgs.lib.fakeHash`; Nix will fail and print the correct hash, which you can paste in place of it.
 ## Usage
 
 Just activate tmux-layouts and fuzzy find your session. To create window layout for a project, create a YAML file in the config folder. The filename should be the full path to your project without the first `/` and with all subsequent `/`'s replaced with `.` and a .yaml extension. To output this filename for your current directory you can use: 
